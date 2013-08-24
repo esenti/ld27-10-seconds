@@ -25,9 +25,9 @@ class SceneManager(object):
 		for k, v in self.scenes.iteritems():
 			v.draw(screen)
 
-	def set_scene(self, scene):
+	def set_scene(self, scene, **kwargs):
 		for k, v in self.scenes.iteritems():
 			if k != scene:
 				v.leave()
 
-		self.scenes[scene].enter()
+		self.scenes[scene].enter(**kwargs)

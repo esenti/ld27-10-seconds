@@ -6,8 +6,10 @@ class GameOver(object):
 
 		self.manager = manager
 		self.font = pygame.font.Font('assets/font/Fleftex_M.ttf', 24)
+		self.font_small = pygame.font.Font('assets/font/Fleftex_M.ttf', 16)
 
-	def enter(self):
+	def enter(self, time_survived):
+		self.time_survived = time_survived
 		self.active = True
 
 	def leave(self):
@@ -19,11 +21,18 @@ class GameOver(object):
 	def draw(self, screen):
 		if self.active:
 
-			string = 'You are dead.'
+			string = 'It\'s over.'
 			t = self.font.render(string, False, (10, 10, 10))
 			r = t.get_rect()
 			r.x = (screen.get_rect().width - r.width) / 2
 			r.y = (screen.get_rect().height - r.height) / 2
+			screen.blit(t, r)
+
+			survived_string = 'You have survived for {0}.{1:03d} seconds.'.format(self.time_survived / 1000, self.time_survived % 1000)
+			t = self.font_small.render(survived_string, False, (10, 10, 10))
+			r = t.get_rect()
+			r.x = (screen.get_rect().width - r.width) / 2
+			r.y = (screen.get_rect().height - r.height) / 2 + 50
 			screen.blit(t, r)
 
 	def event(self, event):
@@ -37,16 +46,20 @@ class Menu(object):
 	def __init__(self, manager):
 
 		self.manager = manager
-		self.font = pygame.font.Font('assets/font/Fleftex_M.ttf', 24)
+		self.font = pygame.font.Font('assets/font/Fleftex_M.ttf', 30)
+		self.font_small = pygame.font.Font('assets/font/Fleftex_M.ttf', 16)
+		self.font_tiny = pygame.font.Font('assets/font/Fleftex_M.ttf', 14)
+		self.current_time = 0
 
 	def enter(self):
 		self.active = True
+		self.current_time = 0
 
 	def leave(self):
 		self.active = False
 
 	def update(self, delta):
-		pass
+		self.current_time += delta
 
 	def draw(self, screen):
 		if self.active:
@@ -55,8 +68,16 @@ class Menu(object):
 			t = self.font.render(string, False, (10, 10, 10))
 			r = t.get_rect()
 			r.x = (screen.get_rect().width - r.width) / 2
-			r.y = (screen.get_rect().height - r.height) / 2
+			r.y = 200
 			screen.blit(t, r)
+
+			if self.current_time % 1000 < 500:
+				string = '[ any key to start ]'
+				t = self.font_tiny.render(string, False, (10, 10, 10))
+				r = t.get_rect()
+				r.x = (screen.get_rect().width - r.width) / 2
+				r.y = screen.get_rect().height - 100
+				screen.blit(t, r)
 
 	def event(self, event):
 		if self.active:
