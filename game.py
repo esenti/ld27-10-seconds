@@ -1,5 +1,5 @@
 import pygame
-from obj import Point, DrawableObject, Camera, FriendlyFly, EnemyFly, Fly, Animation
+from obj import Point, DrawableObject, Camera, FriendlyFly, EnemyFly, Fly, Animation, BackgroundObject, TextAnimation
 import random
 
 
@@ -29,16 +29,18 @@ class Game(object):
 		self.active = False
 		self.objects = []
 
+		self.generation = 0
+
 
 		self.player = DrawableObject(fly_imgs[0].get_rect(), self.fly_anim)
 		self.info = pygame.display.Info()
 
-		for i in range(15):
+		for i in range(16):
 			self.spawn(FriendlyFly, self.fly_anim)
 			self.spawn(EnemyFly, self.enemy_anim)
 
-			self.objects.append(DrawableObject(pygame.Rect(random.randint(-1000, 1000), random.randint(-1000, 1000), plant_img.get_rect().width, plant_img.get_rect().height), [plant_img]))
-			self.objects.append(DrawableObject(pygame.Rect(random.randint(-1000, 1000), random.randint(-1000, 1000), dirt_img.get_rect().width, dirt_img.get_rect().height), [dirt_img]))
+			self.objects.append(BackgroundObject(pygame.Rect(random.randint(-1000, 1000), random.randint(-1000, 1000), plant_img.get_rect().width, plant_img.get_rect().height), [plant_img]))
+			self.objects.append(BackgroundObject(pygame.Rect(random.randint(-1000, 1000), random.randint(-1000, 1000), dirt_img.get_rect().width, dirt_img.get_rect().height), [dirt_img]))
 
 		self.time_left = 10 * 1000
 		self.current_time = 0
@@ -73,7 +75,7 @@ class Game(object):
 			self.current_time += delta
 
 			if self.time_left < 0:
-				self.manager.set_scene('gameover', time_survived=self.current_time)
+				self.manager.set_scene('gameover', time_survived=self.current_time, generation=self.generation)
 
 			if pygame.key.get_pressed()[pygame.K_d] or pygame.key.get_pressed()[pygame.K_a]:
 				self.dx = 0.3 * (int(pygame.key.get_pressed()[pygame.K_d]) - int(pygame.key.get_pressed()[pygame.K_a]))
@@ -98,44 +100,39 @@ class Game(object):
 
 			self.player.move(delta * self.dx, delta * self.dy)
 			self.camera.move(delta * self.dx, delta * self.dy)
-
-			# self.camera.pos.x = self.player.rect.x + 16
-			# self.camera.pos.y = self.player.rect.y + 16
-
+			self.player.update(delta)
 
 			for o in self.objects:
 				o.update(delta, player_pos=self.player.pos)
+
 				if o.expired:
 					self.objects.remove(o)
+				elif isinstance(o, BackgroundObject):
+					o.move(0.05 * delta * self.dx, 0.05 * delta * self.dy)
 				elif self.player.rect.colliderect(o.rect):
 					if isinstance(o, EnemyFly):
 						self.die_sound.play()
-						self.manager.set_scene('gameover', time_survived=self.current_time)
+						self.manager.set_scene('gameover', time_survived=self.current_time, generation=self.generation)
 					elif isinstance(o, FriendlyFly):
 						self.objects.append(Animation(pygame.Rect(self.player.rect.x, self.player.rect.y, self.anim[0].get_rect().width, self.anim[0].get_rect().height), self.anim))
 						self.collect_sound.play()
 						self.time_left = 9999
 						self.objects.remove(o)
-						for i in range(4):
-							self.spawn(FriendlyFly, self.fly_anim)
-							self.spawn(EnemyFly, self.enemy_anim)
+						self.generation += 1
+						self.objects.append(TextAnimation(pygame.Rect(self.player.rect.x, self.player.rect.y, 0, 0), '{}. generation'.format(self.generation)))
 
-			# camera_pos.x += 0.1 * delta * (int(pygame.key.get_pressed()[pygame.K_RIGHT]) - int(pygame.key.get_pressed()[pygame.K_LEFT]))
-			# camera_pos.y += 0.1 * delta * (int(pygame.key.get_pressed()[pygame.K_DOWN]) - int(pygame.key.get_pressed()[pygame.K_UP]))
+						for i in range(random.randint(4, 8)):
+							self.spawn(FriendlyFly, self.fly_anim)
+
+						for i in range(random.randint(4, 8)):
+							self.spawn(EnemyFly, self.enemy_anim)
 
 	def draw(self, screen):
 		if self.active:
-			screen.blit(self.player.current_sprite(self.current_time), self.camera.apply(self.player.rect))
+			screen.blit(self.player.current_sprite(), self.camera.apply(self.player.rect))
 
 			for o in self.objects:
-				screen.blit(o.current_sprite(self.current_time), self.camera.apply(o.rect))
-				# if isinstance(o, Fly):
-				# 	string = '{0:3f}'.format(o.speed)
-				# 	t = self.font_tiny.render(string, False, (10, 10, 10))
-				# 	r = t.get_rect()
-				# 	r.x = o.rect.x
-				# 	r.y = o.rect.y
-				# 	screen.blit(t, self.camera.apply(r))
+				screen.blit(o.current_sprite(), self.camera.apply(o.rect))
 
 			time_string = '{0}.{1:03d}'.format(self.time_left / 1000, self.time_left % 1000)
 			t = self.font.render(time_string, False, (10, 10, 10))

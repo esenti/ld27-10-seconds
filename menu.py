@@ -12,8 +12,9 @@ class GameOver(object):
 		self.font_small = pygame.font.Font('assets/font/Fleftex_M.ttf', 16)
 		self.font_tiny = pygame.font.Font('assets/font/Fleftex_M.ttf', 10)
 
-	def enter(self, time_survived):
+	def enter(self, time_survived, generation):
 		self.time_survived = time_survived
+		self.generation = generation
 		self.active = True
 
 	def leave(self):
@@ -32,18 +33,25 @@ class GameOver(object):
 			r.y = (screen.get_rect().height - r.height) / 2
 			screen.blit(t, r)
 
-			survived_string = 'You have survived for {0}.{1:03d} seconds.'.format(self.time_survived / 1000, self.time_survived % 1000)
+			survived_string = 'You have survived for {0} {1}.'.format(self.generation, 'generation' if self.generation == 1 else 'generations')
 			t = self.font_small.render(survived_string, False, (10, 10, 10))
 			r = t.get_rect()
 			r.x = (screen.get_rect().width - r.width) / 2
-			r.y = (screen.get_rect().height - r.height) / 2 + 50
+			r.y = (screen.get_rect().height - r.height) / 2 + 60
+			screen.blit(t, r)
+
+			survived_string = 'It took you {0}.{1:03d} seconds.'.format(self.time_survived / 1000, self.time_survived % 1000)
+			t = self.font_small.render(survived_string, False, (10, 10, 10))
+			r = t.get_rect()
+			r.x = (screen.get_rect().width - r.width) / 2
+			r.y = (screen.get_rect().height - r.height) / 2 + 100
 			screen.blit(t, r)
 
 			menu_string = '[ space to continue ]'
 			t = self.font_tiny.render(menu_string, False, (10, 10, 10))
 			r = t.get_rect()
 			r.x = (screen.get_rect().width - r.width) / 2
-			r.y = screen.get_rect().height - 60
+			r.y = screen.get_rect().height - 40
 			screen.blit(t, r)
 
 	def event(self, event):
@@ -81,6 +89,7 @@ class Menu(object):
 
 	def update(self, delta):
 		self.current_time += delta
+		self.player.update(delta)
 
 	def draw(self, screen):
 		if self.active:
@@ -95,13 +104,20 @@ class Menu(object):
 			r = self.player.rect
 			r.x = (screen.get_rect().width - r.width) / 2
 			r.y = (screen.get_rect().height - r.height) / 2
-			screen.blit(self.player.current_sprite(self.current_time), r)
+			screen.blit(self.player.current_sprite(), r)
 
-			string = 'vav a js dsjd ksajd sajk'
+			string = 'You have ten seconds before you die.'
 			t = self.font_small.render(string, False, (10, 10, 10))
 			r = t.get_rect()
 			r.x = (screen.get_rect().width - r.width) / 2
 			r.y = screen.get_rect().height - 160
+			screen.blit(t, r)
+
+			string = '[ WASD to move ]'
+			t = self.font_tiny.render(string, False, (10, 10, 10))
+			r = t.get_rect()
+			r.x = (screen.get_rect().width - r.width) / 2
+			r.y = screen.get_rect().height - 90
 			screen.blit(t, r)
 
 			if self.current_time % 1000 < 500:
@@ -109,8 +125,15 @@ class Menu(object):
 				t = self.font_tiny.render(string, False, (10, 10, 10))
 				r = t.get_rect()
 				r.x = (screen.get_rect().width - r.width) / 2
-				r.y = screen.get_rect().height - 60
+				r.y = screen.get_rect().height - 40
 				screen.blit(t, r)
+
+			string = 'ld27/esenti'
+			t = self.font_tiny.render(string, False, (100, 100, 100))
+			r = t.get_rect()
+			r.x = screen.get_rect().width - r.width - 3
+			r.y = screen.get_rect().height - r.height - 3
+			screen.blit(t, r)
 
 	def event(self, event):
 		if self.active:

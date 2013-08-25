@@ -1,4 +1,4 @@
-from pygame import Rect
+from pygame import Rect, font
 from math import sin, sqrt
 from random import random
 
@@ -49,12 +49,30 @@ class DrawableObject(Object):
 		self.sprites = sprites
 		super(DrawableObject, self).__init__(rect)
 
-	def current_sprite(self, time):
-		return self.sprites[(time / 80) % len(self.sprites)]
+	def current_sprite(self):
+		return self.sprites[(self.alive_time / 80) % len(self.sprites)]
 
+
+class TextAnimation(DrawableObject):
+	def __init__(self, rect, text):
+		super(TextAnimation, self).__init__(rect, None)
+		self.font = font.Font('assets/font/Fleftex_M.ttf', 12)
+		self.text_sprite = self.font.render(text, False, (50, 50, 50))
+		self.rect.width = self.text_sprite.get_rect().width
+		self.rect.height = self.text_sprite.get_rect().height
+
+	def current_sprite(self):
+		return self.text_sprite
+
+	def update(self, delta, **kwargs):
+		if self.alive_time > 800:
+			self.expired = True
+		else:
+			self.move(0, delta * -0.1)
+		super(TextAnimation, self).update(delta, **kwargs)
 
 class Animation(DrawableObject):
-	def current_sprite(self, time):
+	def current_sprite(self):
 		i = self.alive_time / 80
 		if i > len(self.sprites) - 1:
 			self.expired = True
@@ -82,6 +100,10 @@ class Camera(Object):
 
 	def apply(self, rect):
 		return Rect(rect.x + self.w / 2 - self.pos.x, rect.y + self.h / 2 - self.pos.y, rect.width, rect.height)
+
+
+class BackgroundObject(DrawableObject):
+	pass
 
 
 class Fly(DrawableObject):
