@@ -1,5 +1,5 @@
 import pygame
-from obj import Point, DrawableObject, Camera, FriendlyFly, EnemyFly, Fly
+from obj import Point, DrawableObject, Camera, FriendlyFly, EnemyFly, Fly, Animation
 import random
 
 
@@ -11,8 +11,14 @@ class Game(object):
 		self.collect_sound = pygame.mixer.Sound('assets/sound/collect.wav')
 		self.die_sound = pygame.mixer.Sound('assets/sound/die.wav')
 
-		self.fly_imgs = [pygame.image.load("assets/img/fly{}.png".format(x)) for x in range(4)]
+		fly_imgs = [pygame.image.load("assets/img/fly{}.png".format(x)) for x in range(4)]
+		self.fly_anim = [fly_imgs[0], fly_imgs[1], fly_imgs[2], fly_imgs[3], fly_imgs[2], fly_imgs[1]]
 
+		enemy_imgs = [pygame.image.load("assets/img/enemy{}.png".format(x)) for x in range(4)]
+		self.enemy_anim = [enemy_imgs[0], enemy_imgs[1], enemy_imgs[2], enemy_imgs[3], enemy_imgs[2], enemy_imgs[1]]
+
+		anim = [pygame.image.load("assets/img/anim{}.png".format(x)) for x in range(4)]
+		self.anim = [anim[0], anim[1], anim[2], anim[3]]
 
 		plant_img = pygame.image.load("assets/img/plant.png")
 
@@ -22,20 +28,20 @@ class Game(object):
 		self.active = False
 		self.objects = []
 
-		self.fly_anim = [self.fly_imgs[0], self.fly_imgs[1], self.fly_imgs[2], self.fly_imgs[3], self.fly_imgs[2], self.fly_imgs[1]]
 
-		self.player = DrawableObject(self.fly_imgs[0].get_rect(), self.fly_anim)
+		self.player = DrawableObject(fly_imgs[0].get_rect(), self.fly_anim)
+		self.info = pygame.display.Info()
 
 		for i in range(15):
-			self.objects.append(FriendlyFly(pygame.Rect(random.randint(-1000, 1000), random.randint(-1000, 1000), self.fly_imgs[0].get_rect().width, self.fly_imgs[0].get_rect().height), self.fly_anim))
-			self.objects.append(EnemyFly(pygame.Rect(random.randint(-1000, 1000), random.randint(-1000, 1000), self.fly_imgs[0].get_rect().width, self.fly_imgs[0].get_rect().height), self.fly_anim))
+			self.spawn(FriendlyFly, self.fly_anim)
+			self.spawn(EnemyFly, self.enemy_anim)
+
 			self.objects.append(DrawableObject(pygame.Rect(random.randint(-1000, 1000), random.randint(-1000, 1000), plant_img.get_rect().width, plant_img.get_rect().height), [plant_img]))
 
 		self.time_left = 10 * 1000
 		self.current_time = 0
 
-		info = pygame.display.Info()
-		self.camera = Camera(0, 0, info.current_w, info.current_h)
+		self.camera = Camera(0, 0, self.info.current_w, self.info.current_h)
 		self.dx = 0
 		self.dy = 0
 
@@ -45,6 +51,19 @@ class Game(object):
 
 	def leave(self):
 		self.active = False
+
+	def spawn(self, class_, anim):
+		ranges = [
+			((self.player.rect.x + self.info.current_w / 2 + 20, self.player.rect.x + self.info.current_w / 2 + 500), (self.player.rect.y - 500, self.player.rect.y + 500)),
+			((self.player.rect.x - self.info.current_w / 2 - 500, self.player.rect.x - self.info.current_w / 2 - 20), (self.player.rect.y - 500, self.player.rect.y + 500)),
+			((self.player.rect.x - 500, self.player.rect.x + 500), (self.player.rect.y - self.info.current_h - 500, self.player.rect.y - self.info.current_h - 20)),
+			((self.player.rect.x - 500, self.player.rect.x + 500), (self.player.rect.y + self.info.current_h + 20, self.player.rect.y + self.info.current_h + 500)),
+		]
+
+		r = random.choice(ranges)
+
+		self.objects.append(class_(pygame.Rect(random.randint(*r[0]), random.randint(*r[1]), anim[0].get_rect().width, anim[0].get_rect().height), anim))
+
 
 	def update(self, delta):
 		if self.active:
@@ -83,18 +102,19 @@ class Game(object):
 
 			for o in self.objects:
 				o.update(delta, player_pos=self.player.pos)
-
-				if self.player.rect.colliderect(o.rect):
+				if o.expired:
+					self.objects.remove(o)
+				elif self.player.rect.colliderect(o.rect):
 					if isinstance(o, EnemyFly):
 						self.die_sound.play()
 						self.manager.set_scene('gameover', time_survived=self.current_time)
 					elif isinstance(o, FriendlyFly):
+						self.objects.append(Animation(pygame.Rect(self.player.rect.x, self.player.rect.y, self.anim[0].get_rect().width, self.anim[0].get_rect().height), self.anim))
 						self.collect_sound.play()
 						self.time_left = 9999
 						self.objects.remove(o)
-						self.objects.append(FriendlyFly(pygame.Rect(random.randint(-1000, 1000), random.randint(-1000, 1000), self.fly_imgs[0].get_rect().width, self.fly_imgs[0].get_rect().height), self.fly_anim))
-						self.objects.append(EnemyFly(pygame.Rect(random.randint(-1000, 1000), random.randint(-1000, 1000), self.fly_imgs[0].get_rect().width, self.fly_imgs[0].get_rect().height), self.fly_anim))
-
+						self.spawn(FriendlyFly, self.fly_anim)
+						self.spawn(EnemyFly, self.enemy_anim)
 
 			# camera_pos.x += 0.1 * delta * (int(pygame.key.get_pressed()[pygame.K_RIGHT]) - int(pygame.key.get_pressed()[pygame.K_LEFT]))
 			# camera_pos.y += 0.1 * delta * (int(pygame.key.get_pressed()[pygame.K_DOWN]) - int(pygame.key.get_pressed()[pygame.K_UP]))

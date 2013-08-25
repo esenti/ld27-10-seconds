@@ -49,6 +49,15 @@ class DrawableObject(Object):
 		return self.sprites[(time / 80) % len(self.sprites)]
 
 
+class Animation(DrawableObject):
+	def current_sprite(self, time):
+		i = self.alive_time / 80
+		if i > len(self.sprites) - 1:
+			self.expired = True
+			i -= 1
+		return self.sprites[i]
+
+
 class Camera(Object):
 	def __init__(self, x, y, w, h):
 		self.w = w

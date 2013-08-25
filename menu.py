@@ -5,8 +5,10 @@ class GameOver(object):
 	def __init__(self, manager):
 
 		self.manager = manager
+		self.select_sound = pygame.mixer.Sound('assets/sound/select.wav')
 		self.font = pygame.font.Font('assets/font/Fleftex_M.ttf', 24)
 		self.font_small = pygame.font.Font('assets/font/Fleftex_M.ttf', 16)
+		self.font_tiny = pygame.font.Font('assets/font/Fleftex_M.ttf', 10)
 
 	def enter(self, time_survived):
 		self.time_survived = time_survived
@@ -35,17 +37,28 @@ class GameOver(object):
 			r.y = (screen.get_rect().height - r.height) / 2 + 50
 			screen.blit(t, r)
 
+			menu_string = '[ space to continue ]'
+			t = self.font_tiny.render(menu_string, False, (10, 10, 10))
+			r = t.get_rect()
+			r.x = (screen.get_rect().width - r.width) / 2
+			r.y = (screen.get_rect().height - r.height) / 2 + 200
+			screen.blit(t, r)
+
 	def event(self, event):
 		if self.active:
 			if event.type == pygame.KEYDOWN:
-				if event.key == pygame.K_ESCAPE:
+				if event.key == pygame.K_SPACE:
+					self.select_sound.play()
 					self.manager.set_scene('menu')
+
+					return True
 
 
 class Menu(object):
 	def __init__(self, manager):
 
 		self.manager = manager
+		self.select_sound = pygame.mixer.Sound('assets/sound/select.wav')
 		self.font = pygame.font.Font('assets/font/Fleftex_M.ttf', 30)
 		self.font_small = pygame.font.Font('assets/font/Fleftex_M.ttf', 16)
 		self.font_tiny = pygame.font.Font('assets/font/Fleftex_M.ttf', 14)
@@ -53,6 +66,7 @@ class Menu(object):
 
 	def enter(self):
 		self.active = True
+		self.select_sound.play()
 		self.current_time = 0
 
 	def leave(self):
@@ -82,4 +96,7 @@ class Menu(object):
 	def event(self, event):
 		if self.active:
 			if event.type == pygame.KEYDOWN:
+				self.select_sound.play()
 				self.manager.set_scene('game')
+
+			return True

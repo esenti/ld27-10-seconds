@@ -16,7 +16,7 @@ screen = pygame.display.set_mode(size)
 prev_time = pygame.time.get_ticks()
 
 manager = SceneManager()
-manager.set_scene('game')
+manager.set_scene('menu')
 
 while 1:
 
