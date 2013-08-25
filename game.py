@@ -26,7 +26,7 @@ class Game(object):
 
 		self.player = DrawableObject(self.fly_imgs[0].get_rect(), self.fly_anim)
 
-		for i in range(12):
+		for i in range(15):
 			self.objects.append(FriendlyFly(pygame.Rect(random.randint(-1000, 1000), random.randint(-1000, 1000), self.fly_imgs[0].get_rect().width, self.fly_imgs[0].get_rect().height), self.fly_anim))
 			self.objects.append(EnemyFly(pygame.Rect(random.randint(-1000, 1000), random.randint(-1000, 1000), self.fly_imgs[0].get_rect().width, self.fly_imgs[0].get_rect().height), self.fly_anim))
 			self.objects.append(DrawableObject(pygame.Rect(random.randint(-1000, 1000), random.randint(-1000, 1000), plant_img.get_rect().width, plant_img.get_rect().height), [plant_img]))
@@ -36,6 +36,8 @@ class Game(object):
 
 		info = pygame.display.Info()
 		self.camera = Camera(0, 0, info.current_w, info.current_h)
+		self.dx = 0
+		self.dy = 0
 
 	def enter(self):
 		self.__init__(self.manager)
@@ -52,8 +54,28 @@ class Game(object):
 			if self.time_left < 0:
 				self.manager.set_scene('gameover', time_survived=self.current_time)
 
-			self.player.move(0.5 * delta * (int(pygame.key.get_pressed()[pygame.K_d]) - int(pygame.key.get_pressed()[pygame.K_a])),
-							 0.5 * delta * (int(pygame.key.get_pressed()[pygame.K_s]) - int(pygame.key.get_pressed()[pygame.K_w])))
+			if pygame.key.get_pressed()[pygame.K_d] or pygame.key.get_pressed()[pygame.K_a]:
+				self.dx = 0.4 * (int(pygame.key.get_pressed()[pygame.K_d]) - int(pygame.key.get_pressed()[pygame.K_a]))
+			else:
+				if self.dx > 0:
+					self.dx -= delta * 0.002
+					self.dx = self.dx if self.dx > 0 else 0
+				elif self.dx < 0:
+					self.dx += delta * 0.002
+					self.dx = self.dx if self.dx < 0 else 0
+
+
+			if pygame.key.get_pressed()[pygame.K_s] or pygame.key.get_pressed()[pygame.K_w]:
+				self.dy = 0.4 * (int(pygame.key.get_pressed()[pygame.K_s]) - int(pygame.key.get_pressed()[pygame.K_w]))
+			else:
+				if self.dy > 0:
+					self.dy -= delta * 0.002
+					self.dy = self.dy if self.dy > 0 else 0
+				elif self.dy < 0:
+					self.dy += delta * 0.002
+					self.dy = self.dy if self.dy < 0 else 0
+
+			self.player.move(delta * self.dx, delta * self.dy)
 
 			self.camera.pos.x = self.player.rect.x + 16
 			self.camera.pos.y = self.player.rect.y + 16
@@ -71,6 +93,7 @@ class Game(object):
 						self.time_left = 9999
 						self.objects.remove(o)
 						self.objects.append(FriendlyFly(pygame.Rect(random.randint(-1000, 1000), random.randint(-1000, 1000), self.fly_imgs[0].get_rect().width, self.fly_imgs[0].get_rect().height), self.fly_anim))
+						self.objects.append(EnemyFly(pygame.Rect(random.randint(-1000, 1000), random.randint(-1000, 1000), self.fly_imgs[0].get_rect().width, self.fly_imgs[0].get_rect().height), self.fly_anim))
 
 
 			# camera_pos.x += 0.1 * delta * (int(pygame.key.get_pressed()[pygame.K_RIGHT]) - int(pygame.key.get_pressed()[pygame.K_LEFT]))

@@ -61,7 +61,7 @@ class Camera(Object):
 
 class Fly(DrawableObject):
 	def __init__(self, rect, sprites):
-		self.speed = random() * 0.1 + 0.1
+		self.speed = random() * 0.16 + 0.1
 		super(Fly, self).__init__(rect, sprites)
 
 
@@ -76,7 +76,7 @@ class EnemyFly(Fly):
 	def update(self, delta, player_pos):
 
 		to_player = Vector(self.pos, player_pos)
-		if to_player.length() < 300:
+		if to_player.length() < 512:
 			to_player.normalize()
 			self.move(to_player.x * delta * self.speed, to_player.y * delta * self.speed)
 		else:
