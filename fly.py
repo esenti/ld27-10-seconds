@@ -10,7 +10,7 @@ pygame.mixer.init(frequency=44100, channels=1)
 size = width, height = 640, 480
 bg_color = 245, 245, 245
 
-pygame.display.set_caption('LD27 - 10 seconds')
+pygame.display.set_caption('You\'re a fly')
 screen = pygame.display.set_mode(size)
 
 prev_time = pygame.time.get_ticks()

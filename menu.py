@@ -26,7 +26,7 @@ class GameOver(object):
 	def draw(self, screen):
 		if self.active:
 
-			string = 'It\'s over.'
+			string = 'Game over.'
 			t = self.font.render(string, False, (10, 10, 10))
 			r = t.get_rect()
 			r.x = (screen.get_rect().width - r.width) / 2
@@ -110,26 +110,25 @@ class Menu(object):
 			t = self.font_small.render(string, False, (10, 10, 10))
 			r = t.get_rect()
 			r.x = (screen.get_rect().width - r.width) / 2
-			r.y = screen.get_rect().height - 160
+			r.y = screen.get_rect().height - 170
 			screen.blit(t, r)
 
-			string = '[ WASD to move ]'
+			string = 'Find a mate to reproduce, avoid being eaten.'
+			t = self.font_small.render(string, False, (10, 10, 10))
+			r = t.get_rect()
+			r.x = (screen.get_rect().width - r.width) / 2
+			r.y = screen.get_rect().height - 130
+			screen.blit(t, r)
+
+			string = '[ WASD to move ] / [ space to start ]'
 			t = self.font_tiny.render(string, False, (10, 10, 10))
 			r = t.get_rect()
 			r.x = (screen.get_rect().width - r.width) / 2
-			r.y = screen.get_rect().height - 90
+			r.y = screen.get_rect().height - 40
 			screen.blit(t, r)
 
-			if self.current_time % 1000 < 500:
-				string = '[ space to start ]'
-				t = self.font_tiny.render(string, False, (10, 10, 10))
-				r = t.get_rect()
-				r.x = (screen.get_rect().width - r.width) / 2
-				r.y = screen.get_rect().height - 40
-				screen.blit(t, r)
-
 			string = 'ld27/esenti'
-			t = self.font_tiny.render(string, False, (100, 100, 100))
+			t = self.font_tiny.render(string, False, (150, 150, 150))
 			r = t.get_rect()
 			r.x = screen.get_rect().width - r.width - 3
 			r.y = screen.get_rect().height - r.height - 3
