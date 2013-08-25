@@ -21,6 +21,7 @@ class Game(object):
 		self.anim = [anim[0], anim[1], anim[2], anim[3]]
 
 		plant_img = pygame.image.load("assets/img/plant.png")
+		dirt_img = pygame.image.load("assets/img/dirt1.png")
 
 		self.font = pygame.font.Font('assets/font/Fleftex_M.ttf', 20)
 		self.font_tiny = pygame.font.Font('assets/font/Fleftex_M.ttf', 10)
@@ -37,11 +38,12 @@ class Game(object):
 			self.spawn(EnemyFly, self.enemy_anim)
 
 			self.objects.append(DrawableObject(pygame.Rect(random.randint(-1000, 1000), random.randint(-1000, 1000), plant_img.get_rect().width, plant_img.get_rect().height), [plant_img]))
+			self.objects.append(DrawableObject(pygame.Rect(random.randint(-1000, 1000), random.randint(-1000, 1000), dirt_img.get_rect().width, dirt_img.get_rect().height), [dirt_img]))
 
 		self.time_left = 10 * 1000
 		self.current_time = 0
 
-		self.camera = Camera(0, 0, self.info.current_w, self.info.current_h)
+		self.camera = Camera(16, 8, self.info.current_w, self.info.current_h)
 		self.dx = 0
 		self.dy = 0
 
@@ -74,7 +76,7 @@ class Game(object):
 				self.manager.set_scene('gameover', time_survived=self.current_time)
 
 			if pygame.key.get_pressed()[pygame.K_d] or pygame.key.get_pressed()[pygame.K_a]:
-				self.dx = 0.4 * (int(pygame.key.get_pressed()[pygame.K_d]) - int(pygame.key.get_pressed()[pygame.K_a]))
+				self.dx = 0.3 * (int(pygame.key.get_pressed()[pygame.K_d]) - int(pygame.key.get_pressed()[pygame.K_a]))
 			else:
 				if self.dx > 0:
 					self.dx -= delta * 0.002
@@ -85,7 +87,7 @@ class Game(object):
 
 
 			if pygame.key.get_pressed()[pygame.K_s] or pygame.key.get_pressed()[pygame.K_w]:
-				self.dy = 0.4 * (int(pygame.key.get_pressed()[pygame.K_s]) - int(pygame.key.get_pressed()[pygame.K_w]))
+				self.dy = 0.3 * (int(pygame.key.get_pressed()[pygame.K_s]) - int(pygame.key.get_pressed()[pygame.K_w]))
 			else:
 				if self.dy > 0:
 					self.dy -= delta * 0.002
@@ -95,9 +97,10 @@ class Game(object):
 					self.dy = self.dy if self.dy < 0 else 0
 
 			self.player.move(delta * self.dx, delta * self.dy)
+			self.camera.move(delta * self.dx, delta * self.dy)
 
-			self.camera.pos.x = self.player.rect.x + 16
-			self.camera.pos.y = self.player.rect.y + 16
+			# self.camera.pos.x = self.player.rect.x + 16
+			# self.camera.pos.y = self.player.rect.y + 16
 
 
 			for o in self.objects:
@@ -113,8 +116,9 @@ class Game(object):
 						self.collect_sound.play()
 						self.time_left = 9999
 						self.objects.remove(o)
-						self.spawn(FriendlyFly, self.fly_anim)
-						self.spawn(EnemyFly, self.enemy_anim)
+						for i in range(4):
+							self.spawn(FriendlyFly, self.fly_anim)
+							self.spawn(EnemyFly, self.enemy_anim)
 
 			# camera_pos.x += 0.1 * delta * (int(pygame.key.get_pressed()[pygame.K_RIGHT]) - int(pygame.key.get_pressed()[pygame.K_LEFT]))
 			# camera_pos.y += 0.1 * delta * (int(pygame.key.get_pressed()[pygame.K_DOWN]) - int(pygame.key.get_pressed()[pygame.K_UP]))

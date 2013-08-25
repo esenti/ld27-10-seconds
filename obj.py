@@ -11,8 +11,12 @@ class Point(object):
 
 class Vector(object):
 	def __init__(self, start, end):
-		self.x = end.x - start.x
-		self.y = end.y - start.y
+		if isinstance(start, Point) and isinstance(end, Point):
+			self.x = end.x - start.x
+			self.y = end.y - start.y
+		else:
+			self.x = start
+			self.y = end
 
 	def length(self):
 		return sqrt(self.x**2 + self.y**2)
@@ -62,7 +66,19 @@ class Camera(Object):
 	def __init__(self, x, y, w, h):
 		self.w = w
 		self.h = h
+		self.vel = [(0, 0)] * 30
 		super(Camera, self).__init__(Rect(x, y, 0, 0))
+
+	def move(self, x, y):
+		self.vel.append((x, y))
+		p = self.vel.pop(0)
+
+		# self.pos.x += p[0]
+		# self.pos.y += p[1]
+		self.pos.x += x
+		self.pos.y += y
+		self.rect.x = self.pos.x
+		self.rect.y = self.pos.y
 
 	def apply(self, rect):
 		return Rect(rect.x + self.w / 2 - self.pos.x, rect.y + self.h / 2 - self.pos.y, rect.width, rect.height)
@@ -75,9 +91,17 @@ class Fly(DrawableObject):
 
 
 class FriendlyFly(Fly):
+	def __init__(self, rect, sprites):
+		self.dir = Vector(random() * 2.0 - 1.0, random() * 2.0 - 1.0)
+		self.dir.normalize()
+		super(FriendlyFly, self).__init__(rect, sprites)
+
 	def update(self, delta, **kwargs):
-		m = sin(self.alive_time / 100) * delta * self.speed
-		self.move(m, m)
+
+		if self.alive_time % 1000 > 990:
+			self.dir = Vector(random() * 2.0 - 1.0, random() * 2.0 - 1.0)
+			self.dir.normalize()
+		self.move(self.dir.x * self.speed, self.dir.y * self.speed)
 		super(FriendlyFly, self).update(delta, **kwargs)
 
 
